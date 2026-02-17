@@ -740,8 +740,6 @@ const AdminDashboard = {
         .select('*, users!inner(full_name, phone, id)')
         .eq('status', 'pending');
       
-      console.log('Pending payments:', pendingPayments, paymentsError);
-      
       const { data: upcomingClasses } = await supabaseClient
         .from('classes')
         .select('*')

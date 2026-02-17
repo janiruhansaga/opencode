@@ -737,7 +737,7 @@ const AdminDashboard = {
       
       const { data: pendingPayments, error: paymentsError } = await supabaseClient
         .from('payments')
-        .select('*, users(full_name, phone, id)')
+        .select('*, users!inner(full_name, phone, id)')
         .eq('status', 'pending');
       
       console.log('Pending payments:', pendingPayments, paymentsError);
@@ -1049,7 +1049,7 @@ const AdminDashboard = {
     try {
       const { data: payments } = await supabaseClient
         .from('payments')
-        .select('*, users(full_name, phone)')
+        .select('*, users!inner(full_name, phone)')
         .order('created_at', { ascending: false });
       
       app.innerHTML = `

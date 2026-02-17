@@ -4,6 +4,7 @@ const App = {
   currentUser: null,
   
   init: async () => {
+    App.initDarkMode();
     document.getElementById('header').innerHTML = Components.header();
     document.getElementById('footer').innerHTML = Components.footer();
     
@@ -15,6 +16,20 @@ const App = {
     } else {
       App.showLogin();
     }
+  },
+  
+  initDarkMode: () => {
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    }
+  },
+  
+  toggleDarkMode: () => {
+    const html = document.documentElement;
+    html.classList.toggle('dark');
+    const isDark = html.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark);
   },
   
   updateUserUI: () => {
@@ -85,87 +100,97 @@ const App = {
   showLogin: () => {
     const app = document.getElementById('app');
     app.innerHTML = `
-      <div class="min-h-[80vh] flex items-center justify-center px-4">
-        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md border border-gray-100">
-          <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <i class="ph ph-graduation-cap text-4xl text-white"></i>
+      <div class="fixed inset-0 flex items-center justify-center px-4 py-8 z-50 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 dark:from-gray-800 dark:via-purple-900 dark:to-gray-900"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.1\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+        <div class="relative z-10 w-full max-w-md">
+          <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl mb-4 border border-white/30">
+              <i class="ph ph-graduation-cap text-5xl text-white"></i>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800">Welcome Back</h2>
-            <p class="text-gray-500 mt-1">Login to continue learning</p>
+            <h2 class="text-3xl font-bold text-white drop-shadow-md">Tuition Class</h2>
+            <p class="text-white/80 mt-1">Login to continue learning</p>
           </div>
-          <form onsubmit="App.handleLogin(event)" class="space-y-5">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-              <div class="relative">
-                <i class="ph ph-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
-                <input type="tel" id="login-phone" class="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50" placeholder="0771234567" required>
+          <div class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20 dark:border-gray-700">
+            <form onsubmit="App.handleLogin(event)" class="space-y-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Phone Number</label>
+                <div class="relative">
+                  <i class="ph ph-phone absolute left-4 top-1/2 -translate-y-1/2 text-purple-500 dark:text-purple-400 text-xl"></i>
+                  <input type="tel" id="login-phone" class="w-full pl-12 pr-4 py-3.5 border-2 border-purple-100 dark:border-purple-900 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition bg-purple-50 dark:bg-gray-800 dark:text-white" placeholder="0771234567" required>
+                </div>
               </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <div class="relative">
-                <i class="ph ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
-                <input type="password" id="login-pin" minlength="6" class="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-gray-50" placeholder="Enter password" required>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Password</label>
+                <div class="relative">
+                  <i class="ph ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-pink-500 dark:text-pink-400 text-xl"></i>
+                  <input type="password" id="login-pin" minlength="6" class="w-full pl-12 pr-4 py-3.5 border-2 border-pink-100 dark:border-pink-900 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none transition bg-pink-50 dark:bg-gray-800 dark:text-white" placeholder="Enter password" required>
+                </div>
               </div>
-            </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 text-white py-3.5 rounded-xl font-semibold transition shadow-lg shadow-blue-500/30">
-              Login
-            </button>
-          </form>
-          <p class="text-center mt-6 text-gray-600">
-            Don't have an account? 
-            <a href="#" onclick="App.navigate('register')" class="text-blue-600 font-semibold hover:underline">Register</a>
-          </p>
+              <button type="submit" class="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 hover:from-purple-600 hover:via-pink-600 hover:to-red-600 text-white py-3.5 rounded-xl font-semibold transition shadow-lg shadow-purple-500/40">
+                Login
+              </button>
+            </form>
+            <p class="text-center mt-6 text-gray-600 dark:text-gray-400">
+              Don't have an account? 
+              <a href="#" onclick="App.navigate('register')" class="text-purple-600 dark:text-purple-400 font-bold hover:text-pink-600 dark:hover:text-pink-400 transition">Register</a>
+            </p>
+          </div>
         </div>
       </div>
+      <style>body > *:not(#app):not(script) { display: none !important; }</style>
     `;
   },
   
   showRegister: () => {
     const app = document.getElementById('app');
     app.innerHTML = `
-      <div class="min-h-[80vh] flex items-center justify-center px-4">
-        <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md border border-gray-100">
-          <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <i class="ph ph-user-plus text-4xl text-white"></i>
+      <div class="fixed inset-0 flex items-center justify-center px-4 py-8 z-50 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-green-400 via-teal-500 to-blue-500 dark:from-gray-800 dark:via-teal-900 dark:to-gray-900"></div>
+        <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.1\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+        <div class="relative z-10 w-full max-w-md">
+          <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-24 h-24 bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl mb-4 border border-white/30">
+              <i class="ph ph-user-plus text-5xl text-white"></i>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800">Create Account</h2>
-            <p class="text-gray-500 mt-1">Join us to start learning</p>
+            <h2 class="text-3xl font-bold text-white drop-shadow-md">Create Account</h2>
+            <p class="text-white/80 mt-1">Join us to start learning</p>
           </div>
-          <form onsubmit="App.handleRegister(event)" class="space-y-5">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-              <div class="relative">
-                <i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
-                <input type="text" id="reg-name" class="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-gray-50" placeholder="Your Name" required>
+          <div class="bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20 dark:border-gray-700">
+            <form onsubmit="App.handleRegister(event)" class="space-y-5">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Full Name</label>
+                <div class="relative">
+                  <i class="ph ph-user absolute left-4 top-1/2 -translate-y-1/2 text-green-500 dark:text-green-400 text-xl"></i>
+                  <input type="text" id="reg-name" class="w-full pl-12 pr-4 py-3.5 border-2 border-green-100 dark:border-green-900 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-green-50 dark:bg-gray-800 dark:text-white" placeholder="Your Name" required>
+                </div>
               </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-              <div class="relative">
-                <i class="ph ph-phone absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
-                <input type="tel" id="reg-phone" class="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-gray-50" placeholder="0771234567" required>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Phone Number</label>
+                <div class="relative">
+                  <i class="ph ph-phone absolute left-4 top-1/2 -translate-y-1/2 text-teal-500 dark:text-teal-400 text-xl"></i>
+                  <input type="tel" id="reg-phone" class="w-full pl-12 pr-4 py-3.5 border-2 border-teal-100 dark:border-teal-900 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition bg-teal-50 dark:bg-gray-800 dark:text-white" placeholder="0771234567" required>
+                </div>
               </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <div class="relative">
-                <i class="ph ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
-                <input type="password" id="reg-pin" minlength="6" class="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition bg-gray-50" placeholder="Min 6 characters" required>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Password</label>
+                <div class="relative">
+                  <i class="ph ph-lock-key absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 dark:text-blue-400 text-xl"></i>
+                  <input type="password" id="reg-pin" minlength="6" class="w-full pl-12 pr-4 py-3.5 border-2 border-blue-100 dark:border-blue-900 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50 dark:bg-gray-800 dark:text-white" placeholder="Min 6 characters" required>
+                </div>
               </div>
-            </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 text-white py-3.5 rounded-xl font-semibold transition shadow-lg shadow-green-500/30">
-              Register
-            </button>
-          </form>
-          <p class="text-center mt-6 text-gray-600">
-            Already have an account? 
-            <a href="#" onclick="App.navigate('login')" class="text-green-600 font-semibold hover:underline">Login</a>
-          </p>
+              <button type="submit" class="w-full bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600 text-white py-3.5 rounded-xl font-semibold transition shadow-lg shadow-green-500/40">
+                Register
+              </button>
+            </form>
+            <p class="text-center mt-6 text-gray-600 dark:text-gray-400">
+              Already have an account? 
+              <a href="#" onclick="App.navigate('login')" class="text-green-600 dark:text-green-400 font-bold hover:text-teal-600 dark:hover:text-teal-400 transition">Login</a>
+            </p>
+          </div>
         </div>
       </div>
+      <style>body > *:not(#app):not(script) { display: none !important; }</style>
     `;
   },
   

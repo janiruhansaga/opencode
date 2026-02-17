@@ -7,6 +7,11 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
   
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -27,7 +32,7 @@
   
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-gradient-to-br from-blue-50 via-white to-gray-50 min-h-screen">
+<body class="bg-gradient-to-br from-blue-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen transition-colors duration-300">
   <!-- Header -->
   <div id="header"></div>
   

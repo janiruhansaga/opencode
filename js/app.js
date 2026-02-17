@@ -824,11 +824,11 @@ const AdminDashboard = {
               ${pendingPayments && pendingPayments.length > 0 ? `
                 <div class="space-y-3">
                   ${pendingPayments.map(p => {
-                    const slipUrl = p.slip_url ? encodeURI(p.slip_url) : '';
+                    const slipUrl = p.slip_url || '';
                     return `
                     <div class="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
                       <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center overflow-hidden cursor-pointer" onclick="AdminDashboard.viewSlip('${slipUrl}')">
+                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center overflow-hidden cursor-pointer" onclick="AdminDashboard.viewSlip('${slipUrl.replace(/'/g, "\\'")}')">
                           ${slipUrl ? `<img src="${slipUrl}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-user text-amber-600 dark:text-amber-400 text-xl\\'></i>'">` : `<i class="ph ph-user text-amber-600 dark:text-amber-400 text-xl"></i>`}
                         </div>
                         <div>
@@ -837,7 +837,7 @@ const AdminDashboard = {
                         </div>
                       </div>
                       <div class="flex items-center gap-3">
-                        <button onclick="AdminDashboard.viewSlip('${slipUrl}')" class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-2">
+                        <button onclick="AdminDashboard.viewSlip('${slipUrl.replace(/'/g, "\\'")}')" class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-2">
                           <i class="ph ph-image"></i> View Slip
                         </button>
                         <button onclick="AdminDashboard.approvePayment('${p.id}')" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition shadow-lg shadow-green-600/30">
@@ -1080,8 +1080,8 @@ const AdminDashboard = {
                   </div>
                       ${p.slip_url ? `
                         <div class="mt-4 flex items-center gap-3">
-                          <img src="${encodeURI(p.slip_url)}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" onerror="this.style.display='none'">
-                          <button onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+                          <img src="${p.slip_url}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" onclick="AdminDashboard.viewSlip('${p.slip_url.replace(/'/g, "\\'")}')" onerror="this.style.display='none'">
+                          <button onclick="AdminDashboard.viewSlip('${p.slip_url.replace(/'/g, "\\'")}')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
                             <i class="ph ph-image"></i> View Slip
                           </button>
                         </div>
@@ -1138,8 +1138,8 @@ const AdminDashboard = {
         </div>
             ${p.slip_url ? `
               <div class="mt-4 flex items-center gap-3">
-                <img src="${encodeURI(p.slip_url)}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" onerror="this.style.display='none'">
-                <button onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+                <img src="${p.slip_url}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" onclick="AdminDashboard.viewSlip('${p.slip_url.replace(/'/g, "\\'")}')" onerror="this.style.display='none'">
+                <button onclick="AdminDashboard.viewSlip('${p.slip_url.replace(/'/g, "\\'")}')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
                   <i class="ph ph-image"></i> View Slip
                 </button>
               </div>
@@ -1412,14 +1412,13 @@ const AdminDashboard = {
       return;
     }
     Swal.fire({
-      imageUrl: slipUrl,
-      imageAlt: 'Payment Slip',
+      title: 'Payment Slip',
+      html: `<img src="${slipUrl}" style="max-width: 100%; max-height: 70vh; border-radius: 8px;" onerror="this.outerHTML='<p style=\\'color: red;\\'>Failed to load image</p>'">`,
       showCancelButton: true,
       showConfirmButton: false,
       cancelButtonText: 'Close',
-      customClass: {
-        image: 'max-h-[70vh] w-auto'
-      }
+      width: '90%',
+      padding: '1rem'
     });
   },
   

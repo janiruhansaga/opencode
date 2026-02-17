@@ -1157,50 +1157,6 @@ const AdminDashboard = {
       </div>
     `).join('') : '<div class="text-center py-12 text-gray-500 dark:text-gray-400"><p>No payments found</p></div>';
   },
-                      <p class="text-sm text-gray-500">${p.users?.phone}</p>
-                      <p class="text-sm mt-2">Amount: Rs. ${p.amount}</p>
-                      <p class="text-sm text-gray-500">Date: ${dayjs(p.payment_date).format('YYYY-MM-DD')}</p>
-                    </div>
-                    <span class="px-2 py-1 rounded-full text-xs font-medium ${p.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : p.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                      ${p.status}
-                    </span>
-                  </div>
-                      ${p.slip_url ? `
-                        <div class="mt-4 flex items-center gap-3">
-                          <img src="${encodeURI(p.slip_url)}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" onerror="this.style.display='none'">
-                          <button onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
-                            <i class="ph ph-image"></i> View Full Slip
-                          </button>
-                        </div>
-                      ` : ''}
-                  ${p.status === 'pending' ? `
-                    <div class="mt-4 flex gap-2">
-                      <button onclick="AdminDashboard.approvePayment('${p.id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                        Approve
-                      </button>
-                      <button onclick="AdminDashboard.rejectPayment('${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                        Reject
-                      </button>
-                    </div>
-                  ` : ''}
-                </div>
-              `).join('') : `
-                <div class="text-center py-12 text-gray-500">
-                  <i class="ph ph-receipt text-5xl mb-4"></i>
-                  <p>No payments found</p>
-                </div>
-              `}
-            </div>
-          </div>
-        </div>
-        ${Components.mobileNav(true)}
-      `;
-    } catch (err) {
-      console.error(err);
-    } finally {
-      App.hideLoading();
-    }
-  },
   
   approvePayment: async (paymentId) => {
     App.showLoading();

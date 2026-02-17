@@ -735,10 +735,12 @@ const AdminDashboard = {
         .select('*')
         .eq('is_admin', false);
       
-      const { data: pendingPayments } = await supabaseClient
+      const { data: pendingPayments, error: paymentsError } = await supabaseClient
         .from('payments')
         .select('*, users(full_name, phone, id)')
         .eq('status', 'pending');
+      
+      console.log('Pending payments:', pendingPayments, paymentsError);
       
       const { data: upcomingClasses } = await supabaseClient
         .from('classes')

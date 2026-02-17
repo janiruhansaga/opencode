@@ -737,7 +737,7 @@ const AdminDashboard = {
       
       const { data: pendingPayments } = await supabaseClient
         .from('payments')
-        .select('*, users(full_name, phone)')
+        .select('*, users(full_name, phone, id)')
         .eq('status', 'pending');
       
       const { data: upcomingClasses } = await supabaseClient
@@ -828,7 +828,7 @@ const AdminDashboard = {
                     return `
                     <div class="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
                       <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center overflow-hidden">
+                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center overflow-hidden cursor-pointer" onclick="AdminDashboard.viewSlip('${slipUrl}')">
                           ${slipUrl ? `<img src="${slipUrl}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-user text-amber-600 dark:text-amber-400 text-xl\\'></i>'">` : `<i class="ph ph-user text-amber-600 dark:text-amber-400 text-xl"></i>`}
                         </div>
                         <div>
@@ -837,7 +837,7 @@ const AdminDashboard = {
                         </div>
                       </div>
                       <div class="flex items-center gap-3">
-                        <button onclick="window.open('${slipUrl}', '_blank')" class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-2">
+                        <button onclick="AdminDashboard.viewSlip('${slipUrl}')" class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-2">
                           <i class="ph ph-image"></i> View Slip
                         </button>
                         <button onclick="AdminDashboard.approvePayment('${p.id}')" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition shadow-lg shadow-green-600/30">
@@ -1072,8 +1072,8 @@ const AdminDashboard = {
                   </div>
                       ${p.slip_url ? `
                         <div class="mt-4 flex items-center gap-3">
-                          <img src="${encodeURI(p.slip_url)}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600" onerror="this.style.display='none'">
-                          <button onclick="window.open('${encodeURI(p.slip_url)}', '_blank')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+                          <img src="${encodeURI(p.slip_url)}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" onerror="this.style.display='none'">
+                          <button onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
                             <i class="ph ph-image"></i> View Full Slip
                           </button>
                         </div>
@@ -1349,6 +1349,27 @@ const AdminDashboard = {
     } finally {
       App.hideLoading();
     }
+  },
+  
+  viewSlip: (slipUrl) => {
+    if (!slipUrl) {
+      Swal.fire({
+        icon: 'error',
+        title: 'No Slip',
+        text: 'No payment slip uploaded'
+      });
+      return;
+    }
+    Swal.fire({
+      imageUrl: slipUrl,
+      imageAlt: 'Payment Slip',
+      showCancelButton: true,
+      showConfirmButton: false,
+      cancelButtonText: 'Close',
+      customClass: {
+        image: 'max-h-[70vh] w-auto'
+      }
+    });
   },
   
   schedule: async () => {

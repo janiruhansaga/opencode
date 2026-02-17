@@ -1,13 +1,22 @@
 // Components - Header, Footer, Sidebar injection
 
+let siteLogo = null;
+
 const Components = {
+  init: async () => {
+    const { data } = await supabaseClient.from('site_settings').select('value').eq('key', 'logo_url').single();
+    if (data?.value) {
+      siteLogo = data.value;
+    }
+  },
+  
   header: () => `
     <header class="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800">
       <div class="container mx-auto px-4 py-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-              <i class="ph ph-graduation-cap text-white text-2xl"></i>
+            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+              ${siteLogo ? `<img src="${siteLogo}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-graduation-cap text-white text-2xl\\'></i>'">` : `<i class="ph ph-graduation-cap text-white text-2xl"></i>`}
             </div>
             <div>
               <h1 class="text-xl font-bold text-gray-800 dark:text-white">Tuition Class</h1>
@@ -43,8 +52,8 @@ const Components = {
       <div class="container mx-auto px-4">
         <div class="flex flex-col md:flex-row justify-between items-center gap-6">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
-              <i class="ph ph-graduation-cap text-white text-xl"></i>
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center overflow-hidden">
+              ${siteLogo ? `<img src="${siteLogo}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-graduation-cap text-white text-xl\\'></i>'">` : `<i class="ph ph-graduation-cap text-white text-xl"></i>`}
             </div>
             <div>
               <span class="font-bold text-white text-lg">Tuition Class</span>
@@ -74,8 +83,8 @@ const Components = {
     <aside class="w-64 bg-white dark:bg-gray-900 shadow-xl min-h-screen hidden md:block border-r border-gray-100 dark:border-gray-800">
       <div class="p-4">
         <div class="flex items-center gap-3 mb-8 px-3 py-4 bg-gradient-to-r from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 rounded-xl border border-blue-100 dark:border-gray-700">
-          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-            <i class="ph ph-graduation-cap text-white text-xl"></i>
+          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+            ${siteLogo ? `<img src="${siteLogo}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-graduation-cap text-white text-xl\\'></i>'">` : `<i class="ph ph-graduation-cap text-white text-xl"></i>`}
           </div>
           <div>
             <h3 class="font-bold text-gray-800 dark:text-white">Tuition Class</h3>
@@ -113,6 +122,12 @@ const Components = {
                 <i class="ph ph-folder-open text-xl text-gray-600 dark:text-gray-400 group-hover:text-white transition"></i>
               </div>
               <span class="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">Resources</span>
+            </a>
+            <a href="#" onclick="App.navigate('admin-settings')" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-blue-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition group">
+              <div class="w-10 h-10 bg-gray-100 dark:bg-gray-800 group-hover:bg-blue-500 rounded-lg flex items-center justify-center transition">
+                <i class="ph ph-gear text-xl text-gray-600 dark:text-gray-400 group-hover:text-white transition"></i>
+              </div>
+              <span class="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">Settings</span>
             </a>
           ` : `
             <a href="#" onclick="App.navigate('student-dashboard')" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-blue-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 transition group">

@@ -5,6 +5,7 @@ const App = {
   
   init: async () => {
     App.initDarkMode();
+    await Components.init();
     document.getElementById('header').innerHTML = Components.header();
     document.getElementById('footer').innerHTML = Components.footer();
     
@@ -93,6 +94,9 @@ const App = {
         break;
       case 'admin-resources':
         AdminDashboard.resources();
+        break;
+      case 'admin-settings':
+        AdminDashboard.settings();
         break;
     }
   },
@@ -229,7 +233,7 @@ const App = {
       
       Toastify({
         text: "Login Successful!",
-        backgroundColor: "#10b981"
+        style: { background: "#10b981" }
       }).showToast();
       
       if (userData.is_admin) {
@@ -309,7 +313,7 @@ const App = {
     App.showLogin();
     Toastify({
       text: "Logged out successfully",
-      backgroundColor: "#6b7280"
+      style: { background: "#6b7280" }
     }).showToast();
   },
   
@@ -1172,7 +1176,7 @@ const AdminDashboard = {
       
       Toastify({
         text: "Student marked as paid!",
-        backgroundColor: "#10b981"
+        style: { background: "#10b981" }
       }).showToast();
       
       AdminDashboard.students();
@@ -1323,7 +1327,7 @@ const AdminDashboard = {
       
       Toastify({
         text: "Class deleted",
-        backgroundColor: "#ef4444"
+        style: { background: "#ef4444" }
       }).showToast();
       
       AdminDashboard.loadClasses();
@@ -1538,12 +1542,137 @@ const AdminDashboard = {
       
       Toastify({
         text: "Resource deleted",
-        backgroundColor: "#6b7280"
+        style: { background: "#6b7280" }
       }).showToast();
       
       AdminDashboard.loadResources();
     } catch (err) {
       console.error(err);
+    } finally {
+      App.hideLoading();
+    }
+  },
+  
+  settings: async () => {
+    if (!AdminDashboard.checkAdmin()) return;
+    
+    const app = document.getElementById('app');
+    
+    App.showLoading();
+    
+    try {
+      const { data: logoSetting } = await supabaseClient
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'logo_url')
+        .single();
+      
+      app.innerHTML = `
+        <div class="flex">
+          ${Components.sidebar(true)}
+          <div class="flex-1 p-4 md:p-6 pb-20 md:pb-6">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Settings</h2>
+            
+            <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 max-w-lg">
+              <h3 class="font-bold text-lg mb-4">Site Logo</h3>
+              
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Logo URL</label>
+                <input type="url" id="logo-url" class="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://example.com/logo.png" value="${logoSetting?.value || ''}">
+              </div>
+              
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">Or Upload Logo</label>
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 text-center cursor-pointer hover:border-blue-500 transition" onclick="document.getElementById('logo-file').click()">
+                  <input type="file" id="logo-file" accept="image/*" class="hidden" onchange="AdminDashboard.uploadLogo(this)">
+                  <i class="ph ph-upload text-3xl text-gray-400 mb-2"></i>
+                  <p class="text-sm text-gray-500">Click to upload logo</p>
+                </div>
+              </div>
+              
+              <button onclick="AdminDashboard.saveLogo()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition">
+                Save Logo
+              </button>
+            </div>
+          </div>
+        </div>
+        ${Components.mobileNav(true)}
+      `;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      App.hideLoading();
+    }
+  },
+  
+  uploadLogo: async (input) => {
+    const file = input.files[0];
+    if (!file) return;
+    
+    App.showLoading();
+    
+    try {
+      const fileName = `logo_${Date.now()}_${file.name}`;
+      const { data, error } = await supabaseClient.storage
+        .from('site_images')
+        .upload(fileName, file);
+      
+      if (error) throw error;
+      
+      const { data: urlData } = supabaseClient.storage
+        .from('site_images')
+        .getPublicUrl(fileName);
+      
+      document.getElementById('logo-url').value = urlData.publicUrl;
+      
+      Toastify({
+        text: "Logo uploaded!",
+        style: { background: "#10b981" }
+      }).showToast();
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: 'Please try again'
+      });
+    } finally {
+      App.hideLoading();
+    }
+  },
+  
+  saveLogo: async () => {
+    const logoUrl = document.getElementById('logo-url').value.trim();
+    
+    if (!logoUrl) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Please enter a logo URL or upload a logo'
+      });
+      return;
+    }
+    
+    App.showLoading();
+    
+    try {
+      await supabaseClient
+        .from('site_settings')
+        .upsert({ key: 'logo_url', value: logoUrl }, { onConflict: 'key' });
+      
+      Toastify({
+        text: "Logo saved!",
+        style: { background: "#10b981" }
+      }).showToast();
+      
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to save logo'
+      });
     } finally {
       App.hideLoading();
     }

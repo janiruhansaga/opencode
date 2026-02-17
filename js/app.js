@@ -927,10 +927,10 @@ const AdminDashboard = {
           ${Components.sidebar(true)}
           <div class="flex-1 p-4 md:p-6 pb-20 md:pb-6">
             <div class="flex justify-between items-center mb-6">
-              <h2 class="text-2xl font-bold text-gray-800">Students</h2>
+              <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Students</h2>
               <div class="flex gap-2">
-                <input type="text" id="search-student" placeholder="Search by name or phone" class="px-4 py-2 border rounded-lg" onkeyup="AdminDashboard.filterStudents()">
-                <select id="filter-status" class="px-4 py-2 border rounded-lg" onchange="AdminDashboard.filterStudents()">
+                <input type="text" id="search-student" placeholder="Search by name or phone" class="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" onkeyup="AdminDashboard.filterStudents()">
+                <select id="filter-status" class="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="AdminDashboard.filterStudents()">
                   <option value="all">All</option>
                   <option value="paid">Paid</option>
                   <option value="unpaid">Unpaid</option>
@@ -1054,14 +1054,109 @@ const AdminDashboard = {
         <div class="flex">
           ${Components.sidebar(true)}
           <div class="flex-1 p-4 md:p-6 pb-20 md:pb-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Pending Payments</h2>
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Payments</h2>
+              <select id="filter-payment-status" class="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white" onchange="AdminDashboard.filterPayments()">
+                <option value="all">All</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
             
-            <div class="space-y-4">
+            <div class="space-y-4" id="payments-list">
               ${payments && payments.length > 0 ? payments.map(p => `
-                <div class="bg-white rounded-xl p-4 shadow-sm">
+                <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
                   <div class="flex items-start justify-between">
                     <div>
-                      <p class="font-medium text-lg">${p.users?.full_name || 'Unknown'}</p>
+                      <p class="font-medium text-lg dark:text-white">${p.users?.full_name || 'Unknown'}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">${p.users?.phone}</p>
+                      <p class="text-sm mt-2 dark:text-gray-300">Amount: Rs. ${p.amount}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">Date: ${dayjs(p.payment_date).format('YYYY-MM-DD')}</p>
+                    </div>
+                    <span class="px-2 py-1 rounded-full text-xs font-medium ${p.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : p.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                      ${p.status}
+                    </span>
+                  </div>
+                      ${p.slip_url ? `
+                        <div class="mt-4 flex items-center gap-3">
+                          <img src="${encodeURI(p.slip_url)}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" onerror="this.style.display='none'">
+                          <button onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+                            <i class="ph ph-image"></i> View Slip
+                          </button>
+                        </div>
+                      ` : ''}
+                  ${p.status === 'pending' ? `
+                    <div class="mt-4 flex gap-2">
+                      <button onclick="AdminDashboard.approvePayment('${p.id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                        Approve
+                      </button>
+                      <button onclick="AdminDashboard.rejectPayment('${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                        Reject
+                      </button>
+                    </div>
+                  ` : ''}
+                </div>
+              `).join('') : `
+                <div class="text-center py-12 text-gray-500 dark:text-gray-400">
+                  <i class="ph ph-receipt text-5xl mb-4"></i>
+                  <p>No payments found</p>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+        ${Components.mobileNav(true)}
+      `;
+      
+      window.allPayments = payments || [];
+    } catch (err) {
+      console.error(err);
+    } finally {
+      App.hideLoading();
+    }
+  },
+  
+  filterPayments: () => {
+    const status = document.getElementById('filter-payment-status').value;
+    const container = document.getElementById('payments-list');
+    
+    const filtered = window.allPayments.filter(p => status === 'all' || p.status === status);
+    
+    container.innerHTML = filtered.length > 0 ? filtered.map(p => `
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="font-medium text-lg dark:text-white">${p.users?.full_name || 'Unknown'}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">${p.users?.phone}</p>
+            <p class="text-sm mt-2 dark:text-gray-300">Amount: Rs. ${p.amount}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Date: ${dayjs(p.payment_date).format('YYYY-MM-DD')}</p>
+          </div>
+          <span class="px-2 py-1 rounded-full text-xs font-medium ${p.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : p.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+            ${p.status}
+          </span>
+        </div>
+            ${p.slip_url ? `
+              <div class="mt-4 flex items-center gap-3">
+                <img src="${encodeURI(p.slip_url)}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" onerror="this.style.display='none'">
+                <button onclick="AdminDashboard.viewSlip('${encodeURI(p.slip_url)}')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+                  <i class="ph ph-image"></i> View Slip
+                </button>
+              </div>
+            ` : ''}
+        ${p.status === 'pending' ? `
+          <div class="mt-4 flex gap-2">
+            <button onclick="AdminDashboard.approvePayment('${p.id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+              Approve
+            </button>
+            <button onclick="AdminDashboard.rejectPayment('${p.id}')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+              Reject
+            </button>
+          </div>
+        ` : ''}
+      </div>
+    `).join('') : '<div class="text-center py-12 text-gray-500 dark:text-gray-400"><p>No payments found</p></div>';
+  },
                       <p class="text-sm text-gray-500">${p.users?.phone}</p>
                       <p class="text-sm mt-2">Amount: Rs. ${p.amount}</p>
                       <p class="text-sm text-gray-500">Date: ${dayjs(p.payment_date).format('YYYY-MM-DD')}</p>

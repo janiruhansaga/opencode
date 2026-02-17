@@ -820,20 +820,20 @@ const AdminDashboard = {
               ${pendingPayments && pendingPayments.length > 0 ? `
                 <div class="space-y-3">
                   ${pendingPayments.map(p => `
-                    <div class="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
+                    <div class="flex items-center justify-between p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
                       <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                          <i class="ph ph-user text-amber-600 text-xl"></i>
+                        <div class="w-12 h-12 bg-amber-100 dark:bg-amber-800 rounded-full flex items-center justify-center overflow-hidden">
+                          ${p.slip_url ? `<img src="${p.slip_url}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-user text-amber-600 dark:text-amber-400 text-xl\\'></i>'">` : `<i class="ph ph-user text-amber-600 dark:text-amber-400 text-xl"></i>`}
                         </div>
                         <div>
-                          <p class="font-semibold text-gray-800">${p.users?.full_name || 'Unknown'}</p>
-                          <p class="text-sm text-gray-500">${p.users?.phone}</p>
+                          <p class="font-semibold text-gray-800 dark:text-white">${p.users?.full_name || 'Unknown'}</p>
+                          <p class="text-sm text-gray-500 dark:text-gray-400">${p.users?.phone}</p>
                         </div>
                       </div>
                       <div class="flex items-center gap-3">
-                        <a href="${p.slip_url}" target="_blank" class="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-200 transition">
-                          <i class="ph ph-image mr-1"></i> View Slip
-                        </a>
+                        <button onclick="window.open('${p.slip_url}', '_blank')" class="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-200 dark:hover:bg-blue-800 transition flex items-center gap-2">
+                          <i class="ph ph-image"></i> View Slip
+                        </button>
                         <button onclick="AdminDashboard.approvePayment('${p.id}')" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition shadow-lg shadow-green-600/30">
                           <i class="ph ph-check mr-1"></i> Approve
                         </button>
@@ -1046,13 +1046,14 @@ const AdminDashboard = {
                       ${p.status}
                     </span>
                   </div>
-                  ${p.slip_url ? `
-                    <div class="mt-4">
-                      <a href="${p.slip_url}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 hover:underline">
-                        <i class="ph ph-image"></i> View Slip
-                      </a>
-                    </div>
-                  ` : ''}
+                      ${p.slip_url ? `
+                        <div class="mt-4 flex items-center gap-3">
+                          <img src="${p.slip_url}" class="w-16 h-16 object-cover rounded-lg border border-gray-200 dark:border-gray-600" onerror="this.style.display='none'">
+                          <button onclick="window.open('${p.slip_url}', '_blank')" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
+                            <i class="ph ph-image"></i> View Full Slip
+                          </button>
+                        </div>
+                      ` : ''}
                   ${p.status === 'pending' ? `
                     <div class="mt-4 flex gap-2">
                       <button onclick="AdminDashboard.approvePayment('${p.id}')" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">

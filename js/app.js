@@ -227,6 +227,10 @@ const App = {
         throw new Error('Invalid phone number or PIN');
       }
       
+      if (userData.suspended) {
+        throw new Error('Your account has been suspended. Contact admin for help.');
+      }
+      
       App.currentUser = userData;
       localStorage.setItem('session', JSON.stringify(userData));
       App.updateUserUI();
@@ -928,29 +932,30 @@ const AdminDashboard = {
                   <option value="all">All</option>
                   <option value="paid">Paid</option>
                   <option value="unpaid">Unpaid</option>
+                  <option value="suspended">Suspended</option>
                 </select>
               </div>
             </div>
             
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
               <table class="w-full">
-                <thead class="bg-gray-50">
+                <thead class="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Name</th>
-                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Phone</th>
-                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
-                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Expires</th>
-                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600">Actions</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Name</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Phone</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Status</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Expires</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-600 dark:text-gray-300">Actions</th>
                   </tr>
                 </thead>
                 <tbody id="students-list">
                   ${students && students.length > 0 ? students.map(s => `
-                    <tr class="border-t hover:bg-gray-50">
-                      <td class="px-4 py-3">${s.full_name}</td>
-                      <td class="px-4 py-3">${s.phone}</td>
+                    <tr class="border-t hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td class="px-4 py-3 dark:text-white">${s.full_name}</td>
+                      <td class="px-4 py-3 dark:text-gray-300">${s.phone}</td>
                       <td class="px-4 py-3">
-                        <span class="px-2 py-1 rounded-full text-xs font-medium ${s.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-                          ${s.payment_status}
+                        <span class="px-2 py-1 rounded-full text-xs font-medium ${s.suspended ? 'bg-red-100 text-red-700' : s.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                          ${s.suspended ? 'Suspended' : s.payment_status}
                         </span>
                       </td>
                       <td class="px-4 py-3">${s.payment_expiry ? dayjs(s.payment_expiry).format('YYYY-MM-DD') : '-'}</td>
@@ -959,6 +964,12 @@ const AdminDashboard = {
                         ${s.payment_status === 'unpaid' ? `
                           <button onclick="AdminDashboard.markPaid('${s.id}')" class="ml-2 text-green-600 hover:underline text-sm">Mark Paid</button>
                         ` : ''}
+                        ${s.suspended ? `
+                          <button onclick="AdminDashboard.unsuspendUser('${s.id}')" class="ml-2 text-orange-600 hover:underline text-sm">Unsuspend</button>
+                        ` : `
+                          <button onclick="AdminDashboard.suspendUser('${s.id}')" class="ml-2 text-yellow-600 hover:underline text-sm">Suspend</button>
+                        `}
+                        <button onclick="AdminDashboard.deleteUser('${s.id}')" class="ml-2 text-red-600 hover:underline text-sm">Delete</button>
                       </td>
                     </tr>
                   `).join('') : `
@@ -989,25 +1000,36 @@ const AdminDashboard = {
     
     const filtered = window.allStudents.filter(s => {
       const matchSearch = s.full_name.toLowerCase().includes(search) || s.phone.includes(search);
-      const matchStatus = status === 'all' || s.payment_status === status;
+      let matchStatus = status === 'all';
+      if (status === 'suspended') {
+        matchStatus = s.suspended === true;
+      } else if (status !== 'all') {
+        matchStatus = s.payment_status === status && !s.suspended;
+      }
       return matchSearch && matchStatus;
     });
     
     tbody.innerHTML = filtered.map(s => `
-      <tr class="border-t hover:bg-gray-50">
-        <td class="px-4 py-3">${s.full_name}</td>
-        <td class="px-4 py-3">${s.phone}</td>
+      <tr class="border-t hover:bg-gray-50 dark:hover:bg-gray-800">
+        <td class="px-4 py-3 dark:text-white">${s.full_name}</td>
+        <td class="px-4 py-3 dark:text-gray-300">${s.phone}</td>
         <td class="px-4 py-3">
-          <span class="px-2 py-1 rounded-full text-xs font-medium ${s.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
-            ${s.payment_status}
+          <span class="px-2 py-1 rounded-full text-xs font-medium ${s.suspended ? 'bg-red-100 text-red-700' : s.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+            ${s.suspended ? 'Suspended' : s.payment_status}
           </span>
         </td>
-        <td class="px-4 py-3">${s.payment_expiry ? dayjs(s.payment_expiry).format('YYYY-MM-DD') : '-'}</td>
+        <td class="px-4 py-3 dark:text-gray-300">${s.payment_expiry ? dayjs(s.payment_expiry).format('YYYY-MM-DD') : '-'}</td>
         <td class="px-4 py-3">
           <button onclick="AdminDashboard.resetPin('${s.id}')" class="text-blue-600 hover:underline text-sm">Reset PIN</button>
           ${s.payment_status === 'unpaid' ? `
             <button onclick="AdminDashboard.markPaid('${s.id}')" class="ml-2 text-green-600 hover:underline text-sm">Mark Paid</button>
           ` : ''}
+          ${s.suspended ? `
+            <button onclick="AdminDashboard.unsuspendUser('${s.id}')" class="ml-2 text-orange-600 hover:underline text-sm">Unsuspend</button>
+          ` : `
+            <button onclick="AdminDashboard.suspendUser('${s.id}')" class="ml-2 text-yellow-600 hover:underline text-sm">Suspend</button>
+          `}
+          <button onclick="AdminDashboard.deleteUser('${s.id}')" class="ml-2 text-red-600 hover:underline text-sm">Delete</button>
         </td>
       </tr>
     `).join('');
@@ -1218,6 +1240,110 @@ const AdminDashboard = {
       });
     } catch (err) {
       console.error(err);
+    } finally {
+      App.hideLoading();
+    }
+  },
+  
+  suspendUser: async (userId) => {
+    const { isConfirmed } = await Swal.fire({
+      title: 'Suspend Student?',
+      text: 'This will prevent the student from logging in',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Suspend',
+      cancelButtonText: 'Cancel'
+    });
+    
+    if (!isConfirmed) return;
+    
+    App.showLoading();
+    
+    try {
+      await supabaseClient
+        .from('users')
+        .update({ suspended: true })
+        .eq('id', userId);
+      
+      Toastify({
+        text: "Student suspended!",
+        style: { background: "#f59e0b" }
+      }).showToast();
+      
+      AdminDashboard.students();
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to suspend student'
+      });
+    } finally {
+      App.hideLoading();
+    }
+  },
+  
+  unsuspendUser: async (userId) => {
+    App.showLoading();
+    
+    try {
+      await supabaseClient
+        .from('users')
+        .update({ suspended: false })
+        .eq('id', userId);
+      
+      Toastify({
+        text: "Student unsuspended!",
+        style: { background: "#10b981" }
+      }).showToast();
+      
+      AdminDashboard.students();
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to unsuspend student'
+      });
+    } finally {
+      App.hideLoading();
+    }
+  },
+  
+  deleteUser: async (userId) => {
+    const { isConfirmed } = await Swal.fire({
+      title: 'Delete Student?',
+      text: 'This action cannot be undone!',
+      icon: 'danger',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#dc2626'
+    });
+    
+    if (!isConfirmed) return;
+    
+    App.showLoading();
+    
+    try {
+      await supabaseClient
+        .from('users')
+        .delete()
+        .eq('id', userId);
+      
+      Toastify({
+        text: "Student deleted!",
+        style: { background: "#6b7280" }
+      }).showToast();
+      
+      AdminDashboard.students();
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to delete student'
+      });
     } finally {
       App.hideLoading();
     }

@@ -735,9 +735,9 @@ const AdminDashboard = {
         .select('*')
         .eq('is_admin', false);
       
-      const { data: pendingPayments, error: paymentsError } = await supabaseClient
+      const { data: pendingPayments } = await supabaseClient
         .from('payments')
-        .select('*, users!inner(full_name, phone, id)')
+        .select('*, user:user_id(full_name, phone)')
         .eq('status', 'pending');
       
       const { data: upcomingClasses } = await supabaseClient
@@ -832,8 +832,8 @@ const AdminDashboard = {
                           ${slipUrl ? `<img src="${slipUrl}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<i class=\\'ph ph-user text-amber-600 dark:text-amber-400 text-xl\\'></i>'">` : `<i class="ph ph-user text-amber-600 dark:text-amber-400 text-xl"></i>`}
                         </div>
                         <div>
-                          <p class="font-semibold text-gray-800 dark:text-white">${p.users?.full_name || 'Unknown'}</p>
-                          <p class="text-sm text-gray-500 dark:text-gray-400">${p.users?.phone}</p>
+                          <p class="font-semibold text-gray-800 dark:text-white">${p.user?.full_name || 'Unknown'}</p>
+                          <p class="text-sm text-gray-500 dark:text-gray-400">${p.user?.phone}</p>
                         </div>
                       </div>
                       <div class="flex items-center gap-3">
@@ -1047,7 +1047,7 @@ const AdminDashboard = {
     try {
       const { data: payments } = await supabaseClient
         .from('payments')
-        .select('*, users!inner(full_name, phone)')
+        .select('*, user:user_id(full_name, phone)')
         .order('created_at', { ascending: false });
       
       app.innerHTML = `
@@ -1069,8 +1069,8 @@ const AdminDashboard = {
                 <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
                   <div class="flex items-start justify-between">
                     <div>
-                      <p class="font-medium text-lg dark:text-white">${p.users?.full_name || 'Unknown'}</p>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">${p.users?.phone}</p>
+                      <p class="font-medium text-lg dark:text-white">${p.user?.full_name || 'Unknown'}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">${p.user?.phone}</p>
                       <p class="text-sm mt-2 dark:text-gray-300">Amount: Rs. ${p.amount}</p>
                       <p class="text-sm text-gray-500 dark:text-gray-400">Date: ${dayjs(p.payment_date).format('YYYY-MM-DD')}</p>
                     </div>
@@ -1127,8 +1127,8 @@ const AdminDashboard = {
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
         <div class="flex items-start justify-between">
           <div>
-            <p class="font-medium text-lg dark:text-white">${p.users?.full_name || 'Unknown'}</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400">${p.users?.phone}</p>
+            <p class="font-medium text-lg dark:text-white">${p.user?.full_name || 'Unknown'}</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400">${p.user?.phone}</p>
             <p class="text-sm mt-2 dark:text-gray-300">Amount: Rs. ${p.amount}</p>
             <p class="text-sm text-gray-500 dark:text-gray-400">Date: ${dayjs(p.payment_date).format('YYYY-MM-DD')}</p>
           </div>
